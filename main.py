@@ -17,9 +17,7 @@ print("")
 # continue running the loop until the 'q' key is pressed
 while not keyboard.is_pressed('q'):
     print("(Hold q to end)")
-    # define the color to be detected in RGB format
     
-
     # loop through the screen and check if it matches the color
     while True:
         color = (94, 94, 94)
