@@ -65,6 +65,7 @@ def find_pixel(color, x_start, y_start, x_end, y_end, scroll_amount, resolution_
 
 # variables
 items = []
+times = []
 option = chooseOption()
 resolution_x, resolution_y = resolutionOption()
 x_iterations = 0
@@ -74,167 +75,174 @@ input("Press enter to begin the script...")
 print("Starting Script")
 print("")
 
-# continue running the loop until the 'q' key is pressed
-while not keyboard.is_pressed('q'):
-    print("(Hold q to end)")
-    
-    if option == 1:
-        # loop through the screen and check if it matches the color
-        x, y = find_pixel((94, 94, 94), 0, 0, 2560, 1440, 100, resolution_x, resolution_y)
-
-        mouse = MouseController()
-        mouse.position = (x, y)
-        time.sleep(0.1)
-        mouse.click(Button.left)
-        time.sleep(0.5)
-        mouse.position = (x - 120, y + 65)
-        time.sleep(0.1)
-        mouse.click(Button.left)
-        time.sleep(0.1)
-        mouse.position = (x - 700, y + 300)
-        time.sleep(0.2)
-        mouse.click(Button.left)
-        time.sleep(0.5)
-        
-        x, y = find_pixel((94, 133, 43), 0, 0, 2560, 1420, -100, resolution_x, resolution_y)
-    else:
-        x, y = find_pixel((94, 94, 94), 0, 0, 2560, 1440, 100, resolution_x, resolution_y)
-        mouse = MouseController()
-        mouse.position = ((x - 700) + (100 * x_iterations), (y + 300) + (100 * y_iterations))
-        time.sleep(0.2)
-        mouse.click(Button.left)
-        time.sleep(0.5)
-        
-    x, y = find_pixel((94, 133, 43), 0, 0, 2560, 1420, -100, resolution_x, resolution_y)
-    mouse = MouseController()
-    mouse.position = (x, y)
-
-    # highlight the text by dragging the mouse
-    mouse.position = (x + 85, y - 65)
-    mouse.press(Button.left)
-    for i in range(40):
-        mouse.move(1, 0) 
-        time.sleep(0.01) 
-    mouse.release(Button.left) 
-
-    # copy sell amount
-    keyboard_controller = KeyboardController()
-    keyboard_controller.press(Key.ctrl)
-    keyboard_controller.press('c')
-    keyboard_controller.release('c')
-    keyboard_controller.release(Key.ctrl)
-    time.sleep(0.1)
-    
-    clipboard_text = pyperclip.paste() # get the text from clipboard
-    print(f"Copied {clipboard_text}")
-    price = clipboard_text 
-
-    # move the mouse back to the original position and click it
-    mouse.position = (x, y) 
-    mouse.click(Button.left)
-
-    # paste the sell amount
-    mouse.position = (1415, 879) 
-    time.sleep(1)
-    mouse.click(Button.left) 
-    keyboard_controller.press(Key.backspace)
-    keyboard_controller.release(Key.backspace)
-    keyboard_controller.press(Key.ctrl)
-    keyboard_controller.press('v')
-    keyboard_controller.release('v')
-    keyboard_controller.release(Key.ctrl)
-
-    # highlight item name
-    mouse.position = (1005, 526)
-    mouse.press(Button.left)
-    for i in range(50):
-        mouse.move(8, 0)
-        time.sleep(0.001)
-    mouse.release(Button.left)
-
-    # copy item name
-    keyboard_controller.press(Key.ctrl)
-    keyboard_controller.press('c')
-    keyboard_controller.release('c')
-    keyboard_controller.release(Key.ctrl)
-    time.sleep(0.1)
-
-    # get the text from the clipboard and assign it to a variable
-    clipboard_text = pyperclip.paste()
-    print(f"Copied {clipboard_text}")
-    item = clipboard_text
-
-    # move to a determined position and click the mouse
-    screenshot = ImageGrab.grab()
-    mouse.position = (900, 920)
-    time.sleep(0.5)
-    x, y = mouse.position
-    
-    # Checks if Steam Subscriber Agreement is checked
-    pixel_color = screenshot.getpixel((x, y))
-    color = (0, 117, 255)
-    if pixel_color != color:
-        time.sleep(0.2)
-        mouse.click(Button.left)
-        print("Checked terms of Steam Subscriber Agreement")
-    else:
-        print("Terms of Steam Subscriber Agreement already checked")
-
-    time.sleep(0.1)
-    mouse.position = (1560, 962)
-    time.sleep(0.1)
-    mouse.click(Button.left)
-    time.sleep(0.5)
-    mouse.position = (1600, 865)
-    time.sleep(0.1)
-    mouse.click(Button.left)
-
-    # steam mobile authentication popup
-    if option == 2:
-        time.sleep(0.5)
-        mouse.position = (1900, 770)
-        time.sleep(0.5)
-        mouse.click(Button.left)
-        print("Steam Mobile Verification Required")
-
-    # print out the item and its price
-    print(f"Now selling {item} for {price}")
-    print("")
-    items.append({"item": item, "price": price})
-    time.sleep(2)
-    
-    # Looping through all 25 items on each page
-    x_iterations += 1
-    if x_iterations == 5:
-        x_iterations = 0
-        y_iterations += 1
-    if y_iterations == 5:
-        y_iterations = 0
-        x, y = find_pixel((94, 94, 94), 0, 0, 2560, 1440, 100, resolution_x, resolution_y)
-        mouse.position = (x - 250 , y + 775)
-        time.sleep(0.5)
-        mouse.click(Button.left)
-        time.sleep(1)
-
-print("")
-print("List of all items and prices.")
-time.sleep(2)
-
 # Get the current date and time and format it as string
-now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+fileTime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
 
 # Used to get the current directory and full file path to generate the text log
-filename = f"output_{now}.txt"
+filename = f"output_{fileTime}.txt"
 filepath = os.path.join(os.getcwd(), filename)
 
-# prints results in command prompt
 # creates log file including the current time
 with open(filepath, 'w') as file:
+    file.write(f"Script starting at {fileTime}\n----------------------------------------------------------------------------------------------------------------------------------------\n")
+    
+    # continue running the loop until the 'q' key is pressed
+    while not keyboard.is_pressed('q'):
+        print("(Hold q to end)")
+        
+        if option == 1:
+            # loop through the screen and check if it matches the color
+            x, y = find_pixel((94, 94, 94), 1280, 0, 2560, 1440, 100, resolution_x, resolution_y)
+
+            mouse = MouseController()
+            mouse.position = (x, y)
+            time.sleep(0.1)
+            mouse.click(Button.left)
+            time.sleep(0.5)
+            mouse.position = (x - 120, y + 65)
+            time.sleep(0.1)
+            mouse.click(Button.left)
+            time.sleep(0.1)
+            mouse.position = (x - 700, y + 300)
+            time.sleep(0.2)
+            mouse.click(Button.left)
+            time.sleep(0.5)
+            
+            x, y = find_pixel((94, 133, 43), 1280, 0, 2560, 1420, -100, resolution_x, resolution_y)
+        else:
+            x, y = find_pixel((94, 94, 94), 1280, 0, 2560, 1440, 100, resolution_x, resolution_y)
+            mouse = MouseController()
+            mouse.position = ((x - 700) + (100 * x_iterations), (y + 300) + (100 * y_iterations))
+            time.sleep(0.2)
+            mouse.click(Button.left)
+            time.sleep(0.5)
+            
+        x, y = find_pixel((94, 133, 43), 1280, 0, 2560, 1420, -100, resolution_x, resolution_y)
+        mouse = MouseController()
+        mouse.position = (x, y)
+
+        # highlight the text by dragging the mouse
+        mouse.position = (x + 85, y - 65)
+        mouse.press(Button.left)
+        for i in range(40):
+            mouse.move(1, 0) 
+            time.sleep(0.01) 
+        mouse.release(Button.left) 
+
+        # copy sell amount
+        keyboard_controller = KeyboardController()
+        keyboard_controller.press(Key.ctrl)
+        keyboard_controller.press('c')
+        keyboard_controller.release('c')
+        keyboard_controller.release(Key.ctrl)
+        time.sleep(0.1)
+        
+        clipboard_text = pyperclip.paste() # get the text from clipboard
+        print(f"Copied {clipboard_text}")
+        price = clipboard_text 
+
+        # move the mouse back to the original position and click it
+        mouse.position = (x, y) 
+        mouse.click(Button.left)
+
+        # paste the sell amount
+        mouse.position = (1415, 879) 
+        time.sleep(1)
+        mouse.click(Button.left) 
+        keyboard_controller.press(Key.backspace)
+        keyboard_controller.release(Key.backspace)
+        keyboard_controller.press(Key.ctrl)
+        keyboard_controller.press('v')
+        keyboard_controller.release('v')
+        keyboard_controller.release(Key.ctrl)
+
+        # highlight item name
+        mouse.position = (1005, 526)
+        mouse.press(Button.left)
+        for i in range(50):
+            mouse.move(8, 0)
+            time.sleep(0.001)
+        mouse.release(Button.left)
+
+        # copy item name
+        keyboard_controller.press(Key.ctrl)
+        keyboard_controller.press('c')
+        keyboard_controller.release('c')
+        keyboard_controller.release(Key.ctrl)
+        time.sleep(0.1)
+
+        # get the text from the clipboard and assign it to a variable
+        clipboard_text = pyperclip.paste()
+        print(f"Copied {clipboard_text}")
+        item = clipboard_text
+
+        # move to a determined position and click the mouse
+        screenshot = ImageGrab.grab()
+        mouse.position = (900, 920)
+        time.sleep(0.5)
+        x, y = mouse.position
+        
+        # Checks if Steam Subscriber Agreement is checked
+        pixel_color = screenshot.getpixel((x, y))
+        color = (0, 117, 255)
+        if pixel_color != color:
+            time.sleep(0.2)
+            mouse.click(Button.left)
+            print("Checked terms of Steam Subscriber Agreement")
+        else:
+            print("Terms of Steam Subscriber Agreement already checked")
+
+        time.sleep(0.1)
+        mouse.position = (1560, 962)
+        time.sleep(0.1)
+        mouse.click(Button.left)
+        time.sleep(0.5)
+        mouse.position = (1600, 865)
+        time.sleep(0.1)
+        mouse.click(Button.left)
+
+        # steam mobile authentication popup
+        if option == 2:
+            time.sleep(0.5)
+            mouse.position = (1900, 770)
+            time.sleep(1)
+            mouse.click(Button.left)
+            print("Steam Mobile Verification Required")
+
+        # print out the item and its price
+        print(f"Now selling {item} for {price}")
+        print("")
+        current_time = datetime.now().strftime("%H:%M:%S")
+        times.append(current_time)
+        items.append({"item": item, "price": price})
+        time.sleep(2)
+        
+        # Looping through all 25 items on each page
+        x_iterations += 1
+        if x_iterations == 5:
+            x_iterations = 0
+            y_iterations += 1
+        if y_iterations == 5:
+            y_iterations = 0
+            x, y = find_pixel((94, 94, 94), 1280, 0, 2560, 1440, 100, resolution_x, resolution_y)
+            mouse.position = (x - 250 , y + 775)
+            time.sleep(0.5)
+            mouse.click(Button.left)
+            time.sleep(1)
+
+    print("")
+    print("List of all items and prices.")
+    time.sleep(2)
+
+    # prints results in command prompt
+
     num = 0
     for item in items:
-        num += 1
-        output = f"{num}. {item['item']} is being sold for {item['price']}\n"
+        time = times[num]
+        output = f"{time} #{num}| {item['item']} is being sold for {item['price']}\n"
         print(output)
         file.write(output)
+        num += 1
 
 input("Press enter to exit...")
