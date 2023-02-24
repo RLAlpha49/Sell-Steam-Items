@@ -5,9 +5,10 @@ import keyboard # for detecting key presses
 import win32api # for scrolling down
 import time # for adding delays
 import pyperclip # for copying and pasting text
+import os # for using operating system functionalites
 from pynput.mouse import Button, Controller as MouseController # for highlighting text using mouse
 from pynput.keyboard import Key, Controller as KeyboardController # for simulating key presses
-from datetime import datetime
+from datetime import datetime # for using the systems current time
 
 def chooseOption():
     option = int(input("Option 1: Go to inventory and start on whatever page you would like.\nOption 2: Specifically select if you get asked for steam mobile confirmation.\nSelect(1 or 2): "))
@@ -44,6 +45,7 @@ def find_pixel(color, x_start, y_start, x_end, y_end, scroll_amount, resolution_
     while True:
         screenshot = ImageGrab.grab(bbox=(0, 0, resolution_x, resolution_y)) # take a screenshot
         found = False
+        # checks every x-axis pixel for every y-axis pixel (left-right/top-down)
         for y in range(y_start, y_end):
             for x in range(x_start, x_end):
                 pixel = screenshot.getpixel((x, y))
@@ -75,13 +77,6 @@ print("")
 # continue running the loop until the 'q' key is pressed
 while not keyboard.is_pressed('q'):
     print("(Hold q to end)")
-
-    x, y = find_pixel((94, 94, 94), 0, 0, 2560, 1440, 100, resolution_x, resolution_y)
-    mouse = MouseController()
-    mouse.position = ((x - 700) + (100 * x_iterations), (y + 300) + (100 * y_iterations))
-    time.sleep(0.2)
-    mouse.click(Button.left)
-    time.sleep(0.5)
     
     if option == 1:
         # loop through the screen and check if it matches the color
@@ -92,7 +87,7 @@ while not keyboard.is_pressed('q'):
         time.sleep(0.1)
         mouse.click(Button.left)
         time.sleep(0.5)
-        mouse.position = (x - 115, y + 65)
+        mouse.position = (x - 120, y + 65)
         time.sleep(0.1)
         mouse.click(Button.left)
         time.sleep(0.1)
@@ -103,27 +98,33 @@ while not keyboard.is_pressed('q'):
         
         x, y = find_pixel((94, 133, 43), 0, 0, 2560, 1420, -100, resolution_x, resolution_y)
     else:
-        x, y = find_pixel((94, 133, 43), 0, 0, 2560, 1420, -100, resolution_x, resolution_y)
+        x, y = find_pixel((94, 94, 94), 0, 0, 2560, 1440, 100, resolution_x, resolution_y)
         mouse = MouseController()
-        mouse.position = (x, y)
+        mouse.position = ((x - 700) + (100 * x_iterations), (y + 300) + (100 * y_iterations))
+        time.sleep(0.2)
+        mouse.click(Button.left)
+        time.sleep(0.5)
+        
+    x, y = find_pixel((94, 133, 43), 0, 0, 2560, 1420, -100, resolution_x, resolution_y)
+    mouse = MouseController()
+    mouse.position = (x, y)
 
     # highlight the text by dragging the mouse
-    mouse.position = (x + 85, y - 65) 
+    mouse.position = (x + 85, y - 65)
     mouse.press(Button.left)
-    
-    # move the mouse to the right in small steps
     for i in range(40):
         mouse.move(1, 0) 
         time.sleep(0.01) 
     mouse.release(Button.left) 
 
-    # simulate pressing Control + V to paste the highlighted text
+    # copy sell amount
     keyboard_controller = KeyboardController()
     keyboard_controller.press(Key.ctrl)
     keyboard_controller.press('c')
     keyboard_controller.release('c')
     keyboard_controller.release(Key.ctrl)
     time.sleep(0.1)
+    
     clipboard_text = pyperclip.paste() # get the text from clipboard
     print(f"Copied {clipboard_text}")
     price = clipboard_text 
@@ -132,7 +133,7 @@ while not keyboard.is_pressed('q'):
     mouse.position = (x, y) 
     mouse.click(Button.left)
 
-    # move to a determined position, press the delete key and paste the copied text
+    # paste the sell amount
     mouse.position = (1415, 879) 
     time.sleep(1)
     mouse.click(Button.left) 
@@ -143,7 +144,7 @@ while not keyboard.is_pressed('q'):
     keyboard_controller.release('v')
     keyboard_controller.release(Key.ctrl)
 
-    # move the mouse to copy more text and paste it
+    # highlight item name
     mouse.position = (1005, 526)
     mouse.press(Button.left)
     for i in range(50):
@@ -151,7 +152,7 @@ while not keyboard.is_pressed('q'):
         time.sleep(0.001)
     mouse.release(Button.left)
 
-    # simulate keyboard shortcut to copy text to clipboard
+    # copy item name
     keyboard_controller.press(Key.ctrl)
     keyboard_controller.press('c')
     keyboard_controller.release('c')
@@ -168,18 +169,18 @@ while not keyboard.is_pressed('q'):
     mouse.position = (900, 920)
     time.sleep(0.5)
     x, y = mouse.position
+    
+    # Checks if Steam Subscriber Agreement is checked
     pixel_color = screenshot.getpixel((x, y))
-
     color = (0, 117, 255)
-
     if pixel_color != color:
-        time.sleep(0.5)
+        time.sleep(0.2)
         mouse.click(Button.left)
         print("Checked terms of Steam Subscriber Agreement")
     else:
         print("Terms of Steam Subscriber Agreement already checked")
 
-    time.sleep(0.5)
+    time.sleep(0.1)
     mouse.position = (1560, 962)
     time.sleep(0.1)
     mouse.click(Button.left)
@@ -200,7 +201,9 @@ while not keyboard.is_pressed('q'):
     print(f"Now selling {item} for {price}")
     print("")
     items.append({"item": item, "price": price})
-    time.sleep(3)
+    time.sleep(2)
+    
+    # Looping through all 25 items on each page
     x_iterations += 1
     if x_iterations == 5:
         x_iterations = 0
@@ -211,7 +214,7 @@ while not keyboard.is_pressed('q'):
         mouse.position = (x - 250 , y + 775)
         time.sleep(0.5)
         mouse.click(Button.left)
-        time.sleep(2)
+        time.sleep(1)
 
 print("")
 print("List of all items and prices.")
@@ -219,9 +222,14 @@ time.sleep(2)
 
 # Get the current date and time and format it as string
 now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+# Used to get the current directory and full file path to generate the text log
+filename = f"output_{now}.txt"
+filepath = os.path.join(os.getcwd(), filename)
+
 # prints results in command prompt
 # creates log file including the current time
-with open(f"output_{now}.txt", 'w') as file:
+with open(filepath, 'w') as file:
     num = 0
     for item in items:
         num += 1
