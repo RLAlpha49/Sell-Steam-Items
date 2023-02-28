@@ -42,6 +42,8 @@ def resolutionOption():
         resolutionOption()
 
 def find_pixel(color, x_start, y_start, x_end, y_end, scroll_amount, resolution_x, resolution_y):
+    not_found = 0
+    times_not_found = 0
     while True:
         screenshot = ImageGrab.grab(bbox=(0, 0, resolution_x, resolution_y)) # take a screenshot
         found = False
@@ -50,26 +52,43 @@ def find_pixel(color, x_start, y_start, x_end, y_end, scroll_amount, resolution_
             for x in range(x_start, x_end):
                 pixel = screenshot.getpixel((x, y))
                 if pixel == color: # if the color is found
-                    print(f"Pixel with color {color} found at ({x}, {y})")
+                    print(f"Button with color {color} found at ({x}, {y})")
                     mouse.move(x, y) 
                     found = True
                     break
             if found:
                 break
         if found:
+            not_found = 0
             return x, y
         else:
             # scroll by the specified amount
             win32api.mouse_event(0x0800, 0, 0, scroll_amount, 0) # simulate scrolling
             time.sleep(0.5)
+            not_found += 1
+            if not_found >= 10:
+                times_not_found += 1
+                print(times_not_found)
+                print(f"Error: Button not found for {not_found} seconds. Attempting to fix #{times_not_found}")
+                mouse.position = (100 + ((100) * (times_not_found - 1)), 100 + ((100) * (times_not_found - 1)))
+                mouse.click(Button.left)
+                time.sleep(0.1)
 
-# variables
+def copyOrPaste(key):
+    keyboard_controller.press(Key.ctrl)
+    keyboard_controller.press(key)
+    keyboard_controller.release(key)
+    keyboard_controller.release(Key.ctrl)
+    time.sleep(0.1)
+
+# variables & arrays
 items = []
 times = []
 option = chooseOption()
 resolution_x, resolution_y = resolutionOption()
 x_iterations = 0
 y_iterations = 0
+keyboard_controller = KeyboardController()
 
 input("Press enter to begin the script...")
 print("Starting Script")
@@ -77,7 +96,6 @@ print("")
 
 # Get the current date and time and format it as string
 fileTime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
 
 # Used to get the current directory and full file path to generate the text log
 filename = f"output_{fileTime}.txt"
@@ -93,14 +111,14 @@ with open(filepath, 'w') as file:
         
         if option == 1:
             # loop through the screen and check if it matches the color
-            x, y = find_pixel((94, 94, 94), 1280, 0, 2560, 1440, 100, resolution_x, resolution_y)
+            x, y = find_pixel((94, 94, 94), 1280, 0, 1920, 1440, 100, resolution_x, resolution_y)
 
             mouse = MouseController()
             mouse.position = (x, y)
             time.sleep(0.1)
             mouse.click(Button.left)
             time.sleep(0.5)
-            mouse.position = (x - 120, y + 65)
+            mouse.position = (x - 105, y + 65)
             time.sleep(0.1)
             mouse.click(Button.left)
             time.sleep(0.1)
@@ -109,16 +127,16 @@ with open(filepath, 'w') as file:
             mouse.click(Button.left)
             time.sleep(0.5)
             
-            x, y = find_pixel((94, 133, 43), 1280, 0, 2560, 1420, -100, resolution_x, resolution_y)
+            x, y = find_pixel((94, 133, 43), 1280, 0, 1920, 1420, -100, resolution_x, resolution_y)
         else:
-            x, y = find_pixel((94, 94, 94), 1280, 0, 2560, 1440, 100, resolution_x, resolution_y)
+            x, y = find_pixel((94, 94, 94), 1280, 0, 1920, 1440, 100, resolution_x, resolution_y)
             mouse = MouseController()
             mouse.position = ((x - 700) + (100 * x_iterations), (y + 300) + (100 * y_iterations))
             time.sleep(0.2)
             mouse.click(Button.left)
             time.sleep(0.5)
             
-        x, y = find_pixel((94, 133, 43), 1280, 0, 2560, 1420, -100, resolution_x, resolution_y)
+        x, y = find_pixel((94, 133, 43), 1280, 0, 1920, 1420, -100, resolution_x, resolution_y)
         mouse = MouseController()
         mouse.position = (x, y)
 
@@ -131,12 +149,7 @@ with open(filepath, 'w') as file:
         mouse.release(Button.left) 
 
         # copy sell amount
-        keyboard_controller = KeyboardController()
-        keyboard_controller.press(Key.ctrl)
-        keyboard_controller.press('c')
-        keyboard_controller.release('c')
-        keyboard_controller.release(Key.ctrl)
-        time.sleep(0.1)
+        copyOrPaste("c")
         
         clipboard_text = pyperclip.paste() # get the text from clipboard
         print(f"Copied {clipboard_text}")
@@ -152,10 +165,7 @@ with open(filepath, 'w') as file:
         mouse.click(Button.left) 
         keyboard_controller.press(Key.backspace)
         keyboard_controller.release(Key.backspace)
-        keyboard_controller.press(Key.ctrl)
-        keyboard_controller.press('v')
-        keyboard_controller.release('v')
-        keyboard_controller.release(Key.ctrl)
+        copyOrPaste("v")
 
         # highlight item name
         mouse.position = (1005, 526)
@@ -166,11 +176,7 @@ with open(filepath, 'w') as file:
         mouse.release(Button.left)
 
         # copy item name
-        keyboard_controller.press(Key.ctrl)
-        keyboard_controller.press('c')
-        keyboard_controller.release('c')
-        keyboard_controller.release(Key.ctrl)
-        time.sleep(0.1)
+        copyOrPaste("c")
 
         # get the text from the clipboard and assign it to a variable
         clipboard_text = pyperclip.paste()
@@ -225,7 +231,7 @@ with open(filepath, 'w') as file:
             y_iterations += 1
         if y_iterations == 5:
             y_iterations = 0
-            x, y = find_pixel((94, 94, 94), 1280, 0, 2560, 1440, 100, resolution_x, resolution_y)
+            x, y = find_pixel((94, 94, 94), 1280, 0, 1920, 1440, 100, resolution_x, resolution_y)
             mouse.position = (x - 250 , y + 775)
             time.sleep(0.5)
             mouse.click(Button.left)
@@ -233,13 +239,12 @@ with open(filepath, 'w') as file:
 
     print("")
     print("List of all items and prices.")
-    time.sleep(2)
+    time.sleep(1)
 
     # prints results in command prompt
-
-    num = 0
+    num = 1
     for item in items:
-        time = times[num]
+        time = times[num - 1]
         output = f"{time} #{num}| {item['item']} is being sold for {item['price']}\n"
         print(output)
         file.write(output)
